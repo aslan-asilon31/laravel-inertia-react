@@ -235,6 +235,11 @@ const updateFilter = () => {
                                   </Link>
                               </DropdownMenuItem>
                               <DropdownMenuItem>
+                                  <Link href={route('products.show', product.id)} passHref>
+                                    <Button variant="outline">Show</Button>
+                                  </Link>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem>
                                   <Button
                                     variant="outline"
                                     onClick={() => handleDelete(product.id)} 

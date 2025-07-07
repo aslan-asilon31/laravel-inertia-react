@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Inertia } from "@inertiajs/inertia";
 import { Button } from "@/components/ui/button";
 import AppLayout from "@/layouts/app-layout";
@@ -8,49 +8,34 @@ import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Head } from "@inertiajs/react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useForm } from "@inertiajs/react";
 
-const EditProduct = ({ product }) => {
-  const { data, setData,  processing, errors } = useForm({
-    product_category_first_id: product.product_category_first_id || "",
-    name: product.name || "",
-    availability: product.availability || "",
-    selling_price: product.selling_price || "",
-    image_url: product.image_url || "",
-    is_activated: product.is_activated || false,
-  });
-
-  useEffect(() => {
-    setData({
-      product_category_first_id: product.product_category_first_id || "",
-      name: product.name || "",
-      availability: product.availability || "",
-      selling_price: product.selling_price || "",
-      image_url: product.image_url || "",
-      is_activated: product.is_activated || false,
-    });
-  }, [product]);
+const ShowProduct = ({ product }) => {
+  const [name, setName] = useState(product.name); 
+  const [sellingPrice, setSellingPrice] = useState(product.selling_price);
+  const [availability, setAvailability] = useState(product.availability);
+  const [imageUrl, setImageUrl] = useState(product.image_url); 
+  const [isActivated, setIsActivated] = useState(product.is_activated);
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
+    // Send PUT request using Inertia
     Inertia.put(route("products.update", product.id), {
-      product_category_first_id: data.product_category_first_id,
-      name: data.name,
-      selling_price: data.selling_price,
-      availability: data.availability,
-      image_url: data.image_url,
-      is_activated: data.is_activated,
+      name,
+      selling_price: sellingPrice,
+      availability,
+      image_url: imageUrl,
+      is_activated: isActivated,
     });
   };
 
   return (
-    <AppLayout breadcrumbs={[{ title: "Edit Product", href: "/products/edit" }]}>
-      <Head title="Edit Product" />
+    <AppLayout breadcrumbs={[{ title: "Show Product", href: "/products/show" }]}>
+      <Head title="Show Product" />
       <div className="flex flex-col gap-6 p-6">
         <Card>
           <CardHeader>
-            <CardTitle>Edit Product</CardTitle>
+            <CardTitle>Show Product</CardTitle>
           </CardHeader>
         </Card>
 
@@ -63,12 +48,10 @@ const EditProduct = ({ product }) => {
               </Label>
               <Input
                 id="name"
-                value={data.name}
-                onChange={(e) => setData("name", e.target.value)}
-                placeholder="Enter product name"
+                value={name}
+                readOnly
                 className="mt-2 block w-full border border-gray-300 rounded-md p-2"
               />
-              {errors.name && <div className="text-red-500">{errors.name}</div>}
             </div>
 
             {/* Selling Price */}
@@ -79,12 +62,10 @@ const EditProduct = ({ product }) => {
               <Input
                 id="selling_price"
                 type="number"
-                value={data.selling_price}
-                onChange={(e) => setData("selling_price", e.target.value)}
-                placeholder="Enter selling price"
+                value={sellingPrice}
+                readOnly
                 className="mt-2 block w-full border border-gray-300 rounded-md p-2"
               />
-              {errors.selling_price && <div className="text-red-500">{errors.selling_price}</div>}
             </div>
 
             {/* Availability */}
@@ -94,14 +75,13 @@ const EditProduct = ({ product }) => {
               </Label>
               <select
                 id="availability"
-                value={data.availability}
-                onChange={(e) => setData("availability", e.target.value)}
+                value={availability}
+                disabled
                 className="mt-2 block w-full border border-gray-300 rounded-md p-2"
               >
                 <option value="in-stock">In Stock</option>
                 <option value="out-of-stock">Out of Stock</option>
               </select>
-              {errors.availability && <div className="text-red-500">{errors.availability}</div>}
             </div>
 
             {/* Image URL */}
@@ -111,15 +91,12 @@ const EditProduct = ({ product }) => {
               </Label>
               <Input
                 id="image_url"
-                value={data.image_url}
-                onChange={(e) => setData("image_url", e.target.value)}
-                placeholder="Enter image URL"
+                value={imageUrl}
+                readOnly
                 className="mt-2 block w-full border border-gray-300 rounded-md p-2"
               />
-              {errors.image_url && <div className="text-red-500">{errors.image_url}</div>}
             </div>
 
-            {/* Is Activated */}
             <div className="flex flex-col">
               <Label htmlFor="is_activated" className="block text-sm font-medium text-gray-700">
                 Is Activated
@@ -127,16 +104,14 @@ const EditProduct = ({ product }) => {
               <input
                 type="checkbox"
                 id="is_activated"
-                checked={data.is_activated}
-                onChange={(e) => setData("is_activated", e.target.checked)}
+                checked={isActivated}
+                disabled
                 className="mt-2 h-4 w-4"
               />
-              {errors.is_activated && <div className="text-red-500">{errors.is_activated}</div>}
             </div>
 
-            {/* Submit Button */}
             <div className="col-span-2 mt-6">
-              <Button type="submit" className="w-full bg-blue-500 text-white rounded-md py-2" disabled={processing}>
+              <Button type="submit" className="w-full bg-blue-500 text-white rounded-md py-2" disabled>
                 Save Changes
               </Button>
             </div>
@@ -147,4 +122,4 @@ const EditProduct = ({ product }) => {
   );
 };
 
-export default EditProduct;
+export default ShowProduct;
