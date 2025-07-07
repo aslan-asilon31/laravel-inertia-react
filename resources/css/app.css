@@ -156,4 +156,12 @@
     body {
         @apply bg-background text-foreground;
     }
+
+    .active {
+        background-color: #e0e0eb;
+        color: #000;
+        font-weight: bold; 
+        border-radius: 4px;
+        padding: 8px 12px; 
+    }
 }

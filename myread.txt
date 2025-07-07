@@ -1,1 +1,5 @@
 laravel_inertia_react
+
+
+
+npx shadcn@latest add form
