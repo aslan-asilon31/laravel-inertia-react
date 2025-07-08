@@ -3,11 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\ProductContent;
+use App\Models\ProductContentFeature;
 use Inertia\Inertia;
 use Illuminate\Http\Request;
 
 class ProductContentController extends Controller
 {
+    public function __construct() {}
+
     public function index(Request $request)
     {
         $query = ProductContent::query();
@@ -61,14 +64,17 @@ class ProductContentController extends Controller
 
     public function store(Request $request)
     {
-        // Validate the incoming request data
+        $validated['id'] = (string) \Str::uuid();
+        $validated['created_by'] = auth()->user() ? auth()->user()->id : null;
+        $validated['updated_by'] = auth()->user() ? auth()->user()->id : null;
+
         $validated = $request->validate([
-            'product_id' => 'required|uuid|exists:products,id', // Ensure valid product ID
+            'product_id' => 'required|uuid|exists:products,id',
             'title' => 'required|string|max:255',
             'slug' => 'required|string|max:255',
-            'url' => 'required|url|unique:product_contents,url', // Ensure URL is unique
-            'image_url' => 'nullable|url', // Optional image URL
-            'is_activated' => 'boolean', // Whether the content is activated
+            'url' => 'required|url|unique:product_contents,url',
+            'image_url' => 'nullable|url',
+            'is_activated' => 'boolean',
         ]);
 
         // Add created_by and updated_by if the user is authenticated
@@ -78,31 +84,44 @@ class ProductContentController extends Controller
         // Create the new product content
         ProductContent::create($validated);
 
-        return redirect()->route('product_contents.index')->with('success', 'Product content created successfully!');
+        return redirect()->route('product-contents.index')->with('success', 'Product content created successfully!');
     }
 
-    public function edit(ProductContent $productContent)
+    public function edit($id)
     {
-        return Inertia::render('ProductContents/Edit', [
+        $products = \App\Models\Product::all();
+        $productContent = \App\Models\ProductContent::findOrFail($id);
+        $productContents = \App\Models\ProductContent::all();
+        $productContentDisplays = \App\Models\ProductContentDisplay::where('product_content_id', $productContent->id)->get();
+        $productContentFeatures = ProductContentFeature::where('product_content_id', $productContent->id)->get();
+
+        return Inertia::render('product-contents/edit', [
+            'products' => $products,
             'productContent' => $productContent,
+            'productContents' => $productContents,
+            'productContentDisplays' => $productContentDisplays,
+            'productContentFeatures' => $productContentFeatures,
         ]);
     }
 
-    public function update(Request $request, ProductContent $productContent)
+
+    public function update(Request $request, $id)
     {
-        // Validate the incoming request data
+        $productContent = ProductContent::findOrFail($id);
         $validated = $request->validate([
+            'product_id' => 'required|exists:products,id',
             'title' => 'required|string|max:255',
             'slug' => 'required|string|max:255',
-            'url' => 'required|url|unique:product_contents,url,' . $productContent->id, // Unique except for current product content
+            'url' => 'required|string|max:255',
             'image_url' => 'nullable|url',
-            'is_activated' => 'boolean', // Whether the content is activated
+            'is_activated' => 'nullable|boolean',
         ]);
 
-        // Update the product content
+        $validated['updated_by'] = \Illuminate\Support\Facades\Auth::user()->name;
+
         $productContent->update($validated);
 
-        return redirect()->route('product_contents.index')->with('success', 'Product content updated successfully!');
+        return redirect()->route('product-contents.index')->with('success', 'Product content updated successfully!');
     }
 
     public function destroy(ProductContent $productContent)
@@ -110,6 +129,6 @@ class ProductContentController extends Controller
         // Delete the product content
         $productContent->delete();
 
-        return redirect()->route('product_contents.index')->with('success', 'Product content deleted successfully!');
+        return redirect()->route('product-contents.index')->with('success', 'Product content deleted successfully!');
     }
 }

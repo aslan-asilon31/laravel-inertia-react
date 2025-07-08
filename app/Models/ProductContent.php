@@ -13,14 +13,7 @@ class ProductContent extends Model
   protected $keyType = 'string';
   public $incrementing = false;
 
-  protected $fillable = [
-    'product_id',
-    'title',
-    'slug',
-    'url',
-    'image_url',
-    'is_activated',
-  ];
+  protected $guarded = [];
 
   public function product()
   {

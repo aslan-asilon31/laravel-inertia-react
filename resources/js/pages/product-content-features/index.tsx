@@ -38,7 +38,7 @@ import {
   SortingState,
   useReactTable,
   VisibilityState,
-} from "@tanstack/react-table";
+} from "@tanstack/react-table"
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableHeader, TableBody, TableRow, TableCell, TableHead } from "@/components/ui/table";
 import { Head } from "@inertiajs/react";
@@ -47,13 +47,14 @@ import Pagination from "@/components/pagination";
 import Swal from "sweetalert2";
 import { type BreadcrumbItem } from '@/types';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import Search from "@/components/search";
 
-const ProductContentIndex = ({ product_contents, filters }) => {
+const ProductContentFeatureIndex = ({ product_content_features, filters }) => {
   const { data, setData, post, processing, errors } = useForm({
     search: filters.search || "",
-    product_id: filters.product_id || "",
-    title: filters.title || "",
+    product_content_id: filters.product_content_id || "",
+    name: filters.name || "",
+    description: filters.description || "",
+    image_url: filters.image_url || "",
     created_by: filters.created_by || "",
     updated_by: filters.updated_by || "",
     is_activated: filters.is_activated || "",
@@ -64,7 +65,7 @@ const ProductContentIndex = ({ product_contents, filters }) => {
   const breadcrumbs: BreadcrumbItem[] = [
       {
           title: `Product Content Display`,
-          href: '/product-content-displays',
+          href: '/product-content-features',
       },
   ];
 
@@ -73,7 +74,7 @@ const ProductContentIndex = ({ product_contents, filters }) => {
   const timeoutRef = useRef(null);
 
   const updateFilter = () => {
-    Inertia.get(route("product-content-displays.index"), { ...data }, {
+    Inertia.get(route("product-content-features.index"), { ...data }, {
       preserveState: true,  
       replace: true,       
     });
@@ -102,8 +103,9 @@ const ProductContentIndex = ({ product_contents, filters }) => {
   const handleClose = () => {
     setData({
       search: "",
-      product_id: "",
-      title: "",
+      product_content_id: "",
+      name: "",
+      image_url: "",
       created_by: "",
       updated_by: "",
       is_activated: "",
@@ -113,7 +115,7 @@ const ProductContentIndex = ({ product_contents, filters }) => {
     toggleSheet(); 
   };
 
-  const handleDelete = (productContentDisplayId) => {
+  const handleDelete = (productId) => {
     Swal.fire({
       title: "Are you sure?",
       text: "You won't be able to revert this!",
@@ -124,7 +126,7 @@ const ProductContentIndex = ({ product_contents, filters }) => {
       confirmButtonText: "Yes, delete it!",
     }).then((result) => {
       if (result.isConfirmed) {
-        Inertia.delete(route("product-content-displays.destroy", productContentDisplayId), {
+        Inertia.delete(route("product-content-displays.destroy", productId), {
           onSuccess: () => {
             Swal.fire("Deleted!", "Your product content display has been deleted.", "success");
           },
@@ -154,7 +156,7 @@ const ProductContentIndex = ({ product_contents, filters }) => {
       hour: "2-digit",
       minute: "2-digit",
       second: "2-digit",
-      hour12: false, // Use 24-hour format
+      hour12: false, 
     };
 
     return new Date(date).toLocaleString("en-GB", options).replace(",", "");
@@ -167,7 +169,7 @@ const ProductContentIndex = ({ product_contents, filters }) => {
       <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4 overflow-x-auto">
         <Card>
             <CardHeader>
-                <CardTitle>Product Content Display Page</CardTitle>
+                <CardTitle> Product Content Display Page</CardTitle>
             </CardHeader>
         </Card>
 
@@ -186,28 +188,30 @@ const ProductContentIndex = ({ product_contents, filters }) => {
                 <TableHeader>
                   <TableRow>
                     <TableHead>No</TableHead>
-                    <TableHead>Title</TableHead>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Description</TableHead>
                     <TableHead>Image URL</TableHead>
                     <TableHead>Created By</TableHead>
                     <TableHead>Updated By</TableHead>
                     <TableHead>Created At</TableHead>
                     <TableHead>Updated At</TableHead>
                     <TableHead>Status</TableHead>
-                    <TableHead>Actions</TableHead>
+                    <TableHead>Aksi</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {product_contents.data.map((productContentDisplay, index) => (
-                    <TableRow key={productContentDisplay.id}>
-                      <TableCell>{++index + (product_contents.current_page-1) * product_contents.per_page}</TableCell>
-                      <TableCell>{productContentDisplay.title}</TableCell>
-                      <TableCell>{productContentDisplay.image_url}</TableCell>
-                      <TableCell>{productContentDisplay.created_by}</TableCell>
-                      <TableCell>{productContentDisplay.updated_by}</TableCell>
-                      <TableCell>{formatDateTime(productContentDisplay.created_at)}</TableCell>
-                      <TableCell>{formatDateTime(productContentDisplay.updated_at)}</TableCell>
-                      <TableCell className={getStatusClass(productContentDisplay.is_activated, productContentDisplay.created_at)}>
-                        {productContentDisplay.is_activated ? "Active" : "Inactive"}
+                  {product_content_features.data.map((product, index) => (
+                    <TableRow key={product.id}>
+                      <TableCell>{++index + (product_content_features.current_page-1) * product_content_features.per_page}</TableCell>
+                      <TableCell>{product.name}</TableCell>
+                      <TableCell>{product.description}</TableCell>
+                      <TableCell>{product.image_url}</TableCell>
+                      <TableCell>{product.created_by}</TableCell>
+                      <TableCell>{product.updated_by}</TableCell>
+                      <TableCell>{formatDateTime(product.created_at)}</TableCell>
+                      <TableCell>{formatDateTime(product.updated_at)}</TableCell>
+                      <TableCell className={getStatusClass(product.is_activated, product.created_at)}>
+                        {product.is_activated ? "Active" : "Inactive"}
                       </TableCell>
                       <TableCell className="relative">
                         <DropdownMenu>
@@ -217,14 +221,14 @@ const ProductContentIndex = ({ product_contents, filters }) => {
                           <DropdownMenuContent className="w-56" align="start">
                             <DropdownMenuGroup>
                               <DropdownMenuItem>
-                                  <Link href={route('product-contents.edit', productContentDisplay.id)} >
+                                  <Link href={route('', product.id)} passHref>
                                     <Button variant="outline">Edit</Button>
                                   </Link>
                               </DropdownMenuItem>
                               <DropdownMenuItem>
                                   <Button
                                     variant="outline"
-                                    onClick={() => handleDelete(productContentDisplay.id)} 
+                                    onClick={() => handleDelete(product.id)} 
                                   >
                                     Delete
                                   </Button>
@@ -243,17 +247,17 @@ const ProductContentIndex = ({ product_contents, filters }) => {
 
         <div className='flex items-center justify-center'>
             <div className="flex items-center justify-center">
-              {product_contents.last_page !== 1 && <Pagination links={product_contents.links} />}
+              {product_content_features.last_page !== 1 && <Pagination links={product_content_features.links} />}
             </div>
 
             <div className="flex justify-center mt-4">
-              {product_contents.links.prev && (
-                <Button onClick={() => goToPage(product_contents.links.prev.page)} className="px-4 py-2 border rounded-md">
+              {product_content_features.links.prev && (
+                <Button onClick={() => goToPage(product_content_features.links.prev.page)} className="px-4 py-2 border rounded-md">
                   Previous
                 </Button>
               )}
-              {product_contents.links.next && (
-                <Button onClick={() => goToPage(product_contents.links.next.page)} className="px-4 py-2 border rounded-md ml-2">
+              {product_content_features.links.next && (
+                <Button onClick={() => goToPage(product_content_features.links.next.page)} className="px-4 py-2 border rounded-md ml-2">
                   Next
                 </Button>
               )}
@@ -265,14 +269,14 @@ const ProductContentIndex = ({ product_contents, filters }) => {
             <SheetHeader>
               <SheetTitle>Advanced Search</SheetTitle>
               <SheetDescription>
-                Filter product content displays by various criteria.
+                Filter product_content_features by various criteria.
               </SheetDescription>
             </SheetHeader>
             <form onSubmit={submit}>
               <div className="grid flex-1 auto-rows-min gap-6 px-4">
-                {/* Filters for the Product Content Display Fields */}
+                {/* Product Name Filter */}
                 <div className="grid gap-3">
-                  <Label htmlFor="product-name">Product Content Display Name</Label>
+                  <Label htmlFor="product-name">Product Name</Label>
                   <Input
                     id="product-name"
                     value={data.search}
@@ -282,13 +286,111 @@ const ProductContentIndex = ({ product_contents, filters }) => {
                   {errors.search && <div className="text-red-500">{errors.search}</div>}
                 </div>
 
-                {/* Filters for product_id, Created By, Updated By */}
-                {/* Additional fields here, same as the code above... */}
+                {/* product_content_id Filter */}
+                <div className="grid gap-3">
+                  <Label htmlFor="product_content_id">product_content_id</Label>
+                  <select
+                    id="product_content_id"
+                    value={data.product_content_id}
+                    onChange={(e) => setData("product_content_id", e.target.value)}
+                    className="border p-2 rounded-md"
+                  >
+                    <option value="">All</option>
+                    <option value="in-stock">In Stock</option>
+                    <option value="out-of-stock">Out of Stock</option>
+                  </select>
+                  {errors.product_content_id && <div className="text-red-500">{errors.product_content_id}</div>}
+                </div>
+
+                {/* Selling Price Filter */}
+                <div className="grid gap-3">
+                  <Label htmlFor="name">Selling Price</Label>
+                  <Input
+                    id="name"
+                    value={data.name}
+                    onChange={(e) => setData("name", e.target.value)}
+                    placeholder="Search by Selling Price"
+                  />
+                  {errors.name && <div className="text-red-500">{errors.name}</div>}
+                </div>
+
+                {/* Image URL Filter */}
+                <div className="grid gap-3">
+                  <Label htmlFor="image_url">Image URL</Label>
+                  <Input
+                    id="image_url"
+                    value={data.image_url}
+                    onChange={(e) => setData("image_url", e.target.value)}
+                    placeholder="Search by image URL"
+                  />
+                  {errors.image_url && <div className="text-red-500">{errors.image_url}</div>}
+                </div>
+
+                {/* Created By Filter */}
+                <div className="grid gap-3">
+                  <Label htmlFor="created_by">Created By</Label>
+                  <Input
+                    id="created_by"
+                    value={data.created_by}
+                    onChange={(e) => setData("created_by", e.target.value)}
+                    placeholder="Search by created by"
+                  />
+                </div>
+
+                {/* Updated By Filter */}
+                <div className="grid gap-3">
+                  <Label htmlFor="updated_by">Updated By</Label>
+                  <Input
+                    id="updated_by"
+                    value={data.updated_by}
+                    onChange={(e) => setData("updated_by", e.target.value)}
+                    placeholder="Search by updated by"
+                  />
+                </div>
+
+                {/* Is Activated Filter */}
+                <div className="grid gap-3">
+                  <Label htmlFor="is_activated">Is Activated</Label>
+                  <select
+                    id="is_activated"
+                    value={data.is_activated}
+                    onChange={(e) => setData("is_activated", e.target.value)}
+                    className="border p-2 rounded-md"
+                  >
+                    <option value="">All</option>
+                    <option value="1">Activated</option>
+                    <option value="0">Not Activated</option>
+                  </select>
+                </div>
+
+                {/* Created At Filter */}
+                <div className="grid gap-3">
+                  <Label htmlFor="created_at">Created At</Label>
+                  <Input
+                    id="created_at"
+                    value={data.created_at}
+                    onChange={(e) => setData("created_at", e.target.value)}
+                    placeholder="Search by created date"
+                  />
+                </div>
+
+                {/* Updated At Filter */}
+                <div className="grid gap-3">
+                  <Label htmlFor="updated_at">Updated At</Label>
+                  <Input
+                    id="updated_at"
+                    value={data.updated_at}
+                    onChange={(e) => setData("updated_at", e.target.value)}
+                    placeholder="Search by updated date"
+                  />
+                </div>
               </div>
 
               <SheetFooter>
                 <button type="submit" disabled={processing}>Search</button>
-                <Button onClick={handleClose} variant="outline">Close</Button>
+                <Button onClick={handleClose} variant="outline">
+                  Close
+                </Button>
               </SheetFooter>
             </form>
           </SheetContent>
@@ -298,4 +400,4 @@ const ProductContentIndex = ({ product_contents, filters }) => {
   );
 };
 
-export default ProductContentIndex;
+export default ProductContentFeatureIndex;

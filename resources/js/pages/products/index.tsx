@@ -41,7 +41,7 @@ import {
   VisibilityState,
 } from "@tanstack/react-table"
 import { ArrowUpDown, ChevronDown, MoreHorizontal } from "lucide-react";
-import { Card, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle,CardContent } from "@/components/ui/card";
 import { Table, TableHeader, TableBody, TableRow, TableCell, TableHead } from "@/components/ui/table";
 import { Head } from "@inertiajs/react";
 import Container from "@/components/container";
@@ -184,7 +184,7 @@ const updateFilter = () => {
         </Card>
 
         <Card>
-            <Container>
+            <CardContent>
               <div className="m-2 flex items-center justify-between gap-4">
                 <Button onClick={toggleSheet} className="mb-4">
                   Advanced Search
@@ -256,7 +256,7 @@ const updateFilter = () => {
                   ))}
                 </TableBody>
               </Table>
-            </Container>
+            </CardContent>
         </Card>
 
         <div className='flex items-center justify-center'>

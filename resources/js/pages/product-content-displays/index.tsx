@@ -208,7 +208,7 @@ const ProductContentDisplayIndex = ({ products, filters }) => {
                           <DropdownMenuContent className="w-56" align="start">
                             <DropdownMenuGroup>
                               <DropdownMenuItem>
-                                  <Link href={route('product-content-displays.edit', product.id)} passHref>
+                                  <Link href={route('', product.id)} passHref>
                                     <Button variant="outline">Edit</Button>
                                   </Link>
                               </DropdownMenuItem>
