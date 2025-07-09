@@ -13,7 +13,6 @@ import {
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -27,51 +26,37 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import {
-  ColumnDef,
-  ColumnFiltersState,
-  flexRender,
-  getCoreRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
-  SortingState,
-  useReactTable,
-  VisibilityState,
-} from "@tanstack/react-table"
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableHeader, TableBody, TableRow, TableCell, TableHead } from "@/components/ui/table";
 import { Head } from "@inertiajs/react";
 import Container from "@/components/container";
-import Pagination from "@/components/pagination";
 import Swal from "sweetalert2";
 import { type BreadcrumbItem } from '@/types';
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
-const ProductContentFeatureIndex = ({ product_content_features, filters }) => {
+const ProductContentFeatureIndex = ({ product_content_features }) => {
+
   const { data, setData, post, processing, errors } = useForm({
-    search: filters.search || "",
-    product_content_id: filters.product_content_id || "",
-    name: filters.name || "",
-    description: filters.description || "",
-    image_url: filters.image_url || "",
-    created_by: filters.created_by || "",
-    updated_by: filters.updated_by || "",
-    is_activated: filters.is_activated || "",
-    created_at: filters.created_at || "",
-    updated_at: filters.updated_at || "",
+    search: product_content_features.search || "",
+    product_content_id: product_content_features.product_content_id || "",
+    name: product_content_features.name || "",
+    description: product_content_features.description || "",
+    image_url: product_content_features.image_url || "",
+    created_by: product_content_features.created_by || "",
+    updated_by: product_content_features.updated_by || "",
+    is_activated: product_content_features.is_activated || "",
+    created_at: product_content_features.created_at || "",
+    updated_at: product_content_features.updated_at || "",
   });
 
   const breadcrumbs: BreadcrumbItem[] = [
-      {
-          title: `Product Content Display`,
-          href: '/product-content-features',
-      },
+    {
+      title: `Product Content Display`,
+      href: '/product-content-features',
+    },
   ];
 
   const [openDropdown, setOpenDropdown] = useState(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
-  const timeoutRef = useRef(null);
 
   const updateFilter = () => {
     Inertia.get(route("product-content-features.index"), { ...data }, {
@@ -85,36 +70,6 @@ const ProductContentFeatureIndex = ({ product_content_features, filters }) => {
     Inertia.get(route("product-content-displays.index"), data);
   };
 
-  const goToPage = (page) => {
-    post(route("product-content-displays.index"), { ...data, page }, {
-      preserveState: true,
-      replace: true,
-    });
-  };
-
-  const toggleDropdown = (productId) => {
-    setOpenDropdown(openDropdown === productId ? null : productId);
-  };
-
-  const toggleSheet = () => {
-    setIsSheetOpen(!isSheetOpen);
-  };
-
-  const handleClose = () => {
-    setData({
-      search: "",
-      product_content_id: "",
-      name: "",
-      image_url: "",
-      created_by: "",
-      updated_by: "",
-      is_activated: "",
-      created_at: "",
-      updated_at: "",
-    });
-    toggleSheet(); 
-  };
-
   const handleDelete = (productId) => {
     Swal.fire({
       title: "Are you sure?",
@@ -126,7 +81,7 @@ const ProductContentFeatureIndex = ({ product_content_features, filters }) => {
       confirmButtonText: "Yes, delete it!",
     }).then((result) => {
       if (result.isConfirmed) {
-        Inertia.delete(route("product-content-displays.destroy", productId), {
+        Inertia.delete(route("product-content-features.destroy", productId), {
           onSuccess: () => {
             Swal.fire("Deleted!", "Your product content display has been deleted.", "success");
           },
@@ -139,14 +94,29 @@ const ProductContentFeatureIndex = ({ product_content_features, filters }) => {
   };
 
   const getStatusClass = (isActive, createdAt) => {
-    const today = new Date().toISOString().split("T")[0]; // Get today's date in 'YYYY-MM-DD' format
-    const createdDate = new Date(createdAt).toISOString().split("T")[0]; // Format the createdAt date
-
-    if (isActive && createdDate === today) {
-      return "text-green-500"; // Green color
-    }
-    return "";
+    const today = new Date().toISOString().split("T")[0]; 
+    const createdDate = new Date(createdAt).toISOString().split("T")[0]; 
+    return isActive && createdDate === today ? "text-green-500" : "";
   };
+
+  const handleClose = () => {
+  // Reset form data
+  setData({
+    search: "",
+    product_content_id: "",
+    name: "",
+    image_url: "",
+    created_by: "",
+    updated_by: "",
+    is_activated: "",
+    created_at: "",
+    updated_at: "",
+  });
+
+  // Menutup modal sheet
+  setIsSheetOpen(false); 
+};
+
 
   const formatDateTime = (date) => {
     const options = {
@@ -158,60 +128,55 @@ const ProductContentFeatureIndex = ({ product_content_features, filters }) => {
       second: "2-digit",
       hour12: false, 
     };
-
     return new Date(date).toLocaleString("en-GB", options).replace(",", "");
   };
 
   return (
-    <AppLayout breadcrumbs={breadcrumbs}>
-      <Head title="Product Content Display" />
-
+    <div>
       <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4 overflow-x-auto">
         <Card>
-            <CardHeader>
-                <CardTitle> Product Content Display Page</CardTitle>
-            </CardHeader>
+          <CardHeader>
+            <CardTitle>Product Content Feature Page</CardTitle>
+          </CardHeader>
         </Card>
 
         <Card>
-            <Container>
-              <div className="m-2 flex items-center justify-between gap-4">
-                <Button onClick={toggleSheet} className="mb-4">
-                  Advanced Search
-                </Button>
-                <Button onClick={() => window.location.href = route('product-content-displays.create')}>
-                  Create Product Content Display
-                </Button>
-              </div>
+          <Container>
+            <div className="m-2 flex items-center justify-between gap-4">
+              <Button onClick={() => setIsSheetOpen(!isSheetOpen)} className="mb-4">Advanced Search</Button>
+              <Button onClick={() => window.location.href = route('product-content-displays.create')}>Create Product Content Feature</Button>
+            </div>
 
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>No</TableHead>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Description</TableHead>
-                    <TableHead>Image URL</TableHead>
-                    <TableHead>Created By</TableHead>
-                    <TableHead>Updated By</TableHead>
-                    <TableHead>Created At</TableHead>
-                    <TableHead>Updated At</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Aksi</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {product_content_features.data.map((product, index) => (
-                    <TableRow key={product.id}>
-                      <TableCell>{++index + (product_content_features.current_page-1) * product_content_features.per_page}</TableCell>
-                      <TableCell>{product.name}</TableCell>
-                      <TableCell>{product.description}</TableCell>
-                      <TableCell>{product.image_url}</TableCell>
-                      <TableCell>{product.created_by}</TableCell>
-                      <TableCell>{product.updated_by}</TableCell>
-                      <TableCell>{formatDateTime(product.created_at)}</TableCell>
-                      <TableCell>{formatDateTime(product.updated_at)}</TableCell>
-                      <TableCell className={getStatusClass(product.is_activated, product.created_at)}>
-                        {product.is_activated ? "Active" : "Inactive"}
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>No</TableHead>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Description</TableHead>
+                  <TableHead>Image URL</TableHead>
+                  <TableHead>Created By</TableHead>
+                  <TableHead>Updated By</TableHead>
+                  <TableHead>Created At</TableHead>
+                  <TableHead>Updated At</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+
+              <TableBody>
+                {Array.isArray(product_content_features) && product_content_features?.length > 0 ? (
+                  product_content_features.map((feature, index) => (
+                    <TableRow key={feature.id}>
+                      <TableCell>{index + 1}</TableCell>
+                      <TableCell>{feature.name}</TableCell>
+                      <TableCell>{feature.description || 'No Description'}</TableCell>
+                      <TableCell>{feature.image_url || 'No Image'}</TableCell>
+                      <TableCell>{feature.created_by || 'Unknown'}</TableCell>
+                      <TableCell>{feature.updated_by || 'Unknown'}</TableCell>
+                      <TableCell>{formatDateTime(feature.created_at)}</TableCell>
+                      <TableCell>{formatDateTime(feature.updated_at)}</TableCell>
+                      <TableCell className={getStatusClass(feature.is_activated, feature.created_at)}>
+                        {feature.is_activated ? 'Active' : 'Inactive'}
                       </TableCell>
                       <TableCell className="relative">
                         <DropdownMenu>
@@ -221,17 +186,14 @@ const ProductContentFeatureIndex = ({ product_content_features, filters }) => {
                           <DropdownMenuContent className="w-56" align="start">
                             <DropdownMenuGroup>
                               <DropdownMenuItem>
-                                  <Link href={route('', product.id)} passHref>
-                                    <Button variant="outline">Edit</Button>
-                                  </Link>
+                                <Link href={route('product-content/product-content-features/edit', feature.id)} passHref>
+                                  <Button variant="outline">Edit</Button>
+                                </Link>
                               </DropdownMenuItem>
                               <DropdownMenuItem>
-                                  <Button
-                                    variant="outline"
-                                    onClick={() => handleDelete(product.id)} 
-                                  >
-                                    Delete
-                                  </Button>
+                                <Button variant="outline" onClick={() => handleDelete(feature.id)}>
+                                  Delete
+                                </Button>
                               </DropdownMenuItem>
                             </DropdownMenuGroup>
                             <DropdownMenuSeparator />
@@ -239,42 +201,26 @@ const ProductContentFeatureIndex = ({ product_content_features, filters }) => {
                         </DropdownMenu>
                       </TableCell>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </Container>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={10}>No features available</td>
+                  </tr>
+                )}
+              </TableBody>
+            </Table>
+          </Container>
         </Card>
 
-        <div className='flex items-center justify-center'>
-            <div className="flex items-center justify-center">
-              {product_content_features.last_page !== 1 && <Pagination links={product_content_features.links} />}
-            </div>
-
-            <div className="flex justify-center mt-4">
-              {product_content_features.links.prev && (
-                <Button onClick={() => goToPage(product_content_features.links.prev.page)} className="px-4 py-2 border rounded-md">
-                  Previous
-                </Button>
-              )}
-              {product_content_features.links.next && (
-                <Button onClick={() => goToPage(product_content_features.links.next.page)} className="px-4 py-2 border rounded-md ml-2">
-                  Next
-                </Button>
-              )}
-            </div>
-        </div>
-
-        <Sheet open={isSheetOpen} onOpenChange={toggleSheet}>
+        <Sheet open={isSheetOpen} onOpenChange={() => setIsSheetOpen(!isSheetOpen)}>
           <SheetContent className="overflow-y-auto max-h-[190vh]">
             <SheetHeader>
               <SheetTitle>Advanced Search</SheetTitle>
-              <SheetDescription>
-                Filter product_content_features by various criteria.
-              </SheetDescription>
+              <SheetDescription>Filter product content features by various criteria.</SheetDescription>
             </SheetHeader>
+
             <form onSubmit={submit}>
               <div className="grid flex-1 auto-rows-min gap-6 px-4">
-                {/* Product Name Filter */}
                 <div className="grid gap-3">
                   <Label htmlFor="product-name">Product Name</Label>
                   <Input
@@ -286,117 +232,19 @@ const ProductContentFeatureIndex = ({ product_content_features, filters }) => {
                   {errors.search && <div className="text-red-500">{errors.search}</div>}
                 </div>
 
-                {/* product_content_id Filter */}
-                <div className="grid gap-3">
-                  <Label htmlFor="product_content_id">product_content_id</Label>
-                  <select
-                    id="product_content_id"
-                    value={data.product_content_id}
-                    onChange={(e) => setData("product_content_id", e.target.value)}
-                    className="border p-2 rounded-md"
-                  >
-                    <option value="">All</option>
-                    <option value="in-stock">In Stock</option>
-                    <option value="out-of-stock">Out of Stock</option>
-                  </select>
-                  {errors.product_content_id && <div className="text-red-500">{errors.product_content_id}</div>}
-                </div>
+                {/* Additional filters can go here */}
 
-                {/* Selling Price Filter */}
-                <div className="grid gap-3">
-                  <Label htmlFor="name">Selling Price</Label>
-                  <Input
-                    id="name"
-                    value={data.name}
-                    onChange={(e) => setData("name", e.target.value)}
-                    placeholder="Search by Selling Price"
-                  />
-                  {errors.name && <div className="text-red-500">{errors.name}</div>}
-                </div>
-
-                {/* Image URL Filter */}
-                <div className="grid gap-3">
-                  <Label htmlFor="image_url">Image URL</Label>
-                  <Input
-                    id="image_url"
-                    value={data.image_url}
-                    onChange={(e) => setData("image_url", e.target.value)}
-                    placeholder="Search by image URL"
-                  />
-                  {errors.image_url && <div className="text-red-500">{errors.image_url}</div>}
-                </div>
-
-                {/* Created By Filter */}
-                <div className="grid gap-3">
-                  <Label htmlFor="created_by">Created By</Label>
-                  <Input
-                    id="created_by"
-                    value={data.created_by}
-                    onChange={(e) => setData("created_by", e.target.value)}
-                    placeholder="Search by created by"
-                  />
-                </div>
-
-                {/* Updated By Filter */}
-                <div className="grid gap-3">
-                  <Label htmlFor="updated_by">Updated By</Label>
-                  <Input
-                    id="updated_by"
-                    value={data.updated_by}
-                    onChange={(e) => setData("updated_by", e.target.value)}
-                    placeholder="Search by updated by"
-                  />
-                </div>
-
-                {/* Is Activated Filter */}
-                <div className="grid gap-3">
-                  <Label htmlFor="is_activated">Is Activated</Label>
-                  <select
-                    id="is_activated"
-                    value={data.is_activated}
-                    onChange={(e) => setData("is_activated", e.target.value)}
-                    className="border p-2 rounded-md"
-                  >
-                    <option value="">All</option>
-                    <option value="1">Activated</option>
-                    <option value="0">Not Activated</option>
-                  </select>
-                </div>
-
-                {/* Created At Filter */}
-                <div className="grid gap-3">
-                  <Label htmlFor="created_at">Created At</Label>
-                  <Input
-                    id="created_at"
-                    value={data.created_at}
-                    onChange={(e) => setData("created_at", e.target.value)}
-                    placeholder="Search by created date"
-                  />
-                </div>
-
-                {/* Updated At Filter */}
-                <div className="grid gap-3">
-                  <Label htmlFor="updated_at">Updated At</Label>
-                  <Input
-                    id="updated_at"
-                    value={data.updated_at}
-                    onChange={(e) => setData("updated_at", e.target.value)}
-                    placeholder="Search by updated date"
-                  />
-                </div>
               </div>
 
               <SheetFooter>
-                <button type="submit" disabled={processing}>Search</button>
-                <Button onClick={handleClose} variant="outline">
-                  Close
-                </Button>
+                <Button type="submit" disabled={processing}>Search</Button>
+                <Button onClick={handleClose} variant="outline">Close</Button>
               </SheetFooter>
             </form>
           </SheetContent>
         </Sheet>
       </div>
-    </AppLayout>
+    </div>
   );
 };
 

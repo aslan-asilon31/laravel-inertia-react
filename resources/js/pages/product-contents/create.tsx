@@ -10,6 +10,7 @@ import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { AppLayout } from "@/layouts/app-layout";
 import { Head } from "@inertiajs/react";
 import { usePage } from "@inertiajs/react";
+import { toast } from "sonner";
 
 const ProductContentCreate = () => {
   const { data, setData, post, processing, errors } = useForm({
@@ -19,11 +20,31 @@ const ProductContentCreate = () => {
     is_activated: true,
   });
 
-  const { productContents } = usePage().props; // Fetch available product contents
+  const { productContents } = usePage().props; 
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    post(route("product-content-displays.store"), data);
+
+    try {
+      // Kirim data produk
+      await post(route("product-content-displays.store"), data);
+      
+      // Menampilkan toast setelah berhasil
+      toast.success("Product created successfully", {
+        description: "The product has been added to the list.",
+      });
+
+      // Navigasi ke halaman Index setelah berhasil
+      Inertia.visit(route("product-content-displays.index"));
+
+    } catch (error) {
+      // Menampilkan toast jika terjadi error
+      toast.error("Product creation failed", {
+        description: "Something went wrong, please try again.",
+      });
+    }
+
+    // post(route("product-content-displays.store"), data);
   };
 
   return (

@@ -94,7 +94,6 @@ class ProductContentController extends Controller
         $productContents = \App\Models\ProductContent::all();
         $productContentDisplays = \App\Models\ProductContentDisplay::where('product_content_id', $productContent->id)->get();
         $productContentFeatures = ProductContentFeature::where('product_content_id', $productContent->id)->get();
-
         return Inertia::render('product-contents/edit', [
             'products' => $products,
             'productContent' => $productContent,

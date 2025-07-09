@@ -65,9 +65,10 @@ class ProductController extends Controller
         $validated['created_by'] = auth()->user() ? auth()->user()->id : null;
         $validated['updated_by'] = auth()->user() ? auth()->user()->id : null;
 
-        Product::create($validated);
+        $product = Product::create($validated);
 
-        return redirect()->route('products.index')->with('success', 'Product created successfully!');
+        return redirect()->route('products.show', $product->id)
+            ->with('success', 'Product created successfully!');
     }
 
     public function show(Product $product)
@@ -79,8 +80,12 @@ class ProductController extends Controller
 
     public function edit(Product $product)
     {
+        $productCategories = \App\Models\ProductCategoryFirst::all();
+
         return Inertia::render('products/edit', [
             'product' => $product,
+            'productCategories' => $productCategories,
+
         ]);
     }
 
@@ -90,7 +95,8 @@ class ProductController extends Controller
 
         $product->update($validated);
 
-        return redirect()->route('products.index')->with('success', 'Product updated successfully!');
+        return redirect()->route('products.show', $product->id)
+            ->with('success', 'Product updated successfully!');
     }
 
     public function destroy(Product $product)

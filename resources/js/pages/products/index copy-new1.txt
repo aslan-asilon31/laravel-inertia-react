@@ -1,0 +1,202 @@
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import AppLayout from "@/layouts/app-layout";
+import Search from '@/components/search';
+import {
+  Sheet,
+  SheetClose,
+  SheetFooter,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Head, usePage } from "@inertiajs/react";
+import { type BreadcrumbItem } from '@/types';
+import ProductTable from "@/pages/products/components/product-table";
+import ProductFilterForm from "@/pages/products/components/product-filter-form";
+import { create } from 'zustand';
+
+interface Record {
+  id: string;
+  product_category_first_id: string;
+  name: string;
+  selling_price: number;
+  availability: string;
+  image_url: string;
+  created_by: string;
+  updated_by: string;
+  is_activated: number;
+  created_at: string;
+  updated_at: string;
+}
+
+interface Pagination {
+  current_page: number;
+  from: number;
+  last_page: number;
+  per_page: number;
+  prev_page_url: null;
+  to: number;
+  total: number;
+}
+
+
+interface ProductStore {
+  record: Product;
+  records: Product[];
+    error: any;
+  loading: boolean;
+  pagination: Pagination;
+  setLoading: (loading: boolean) => void;
+  setRecords: (records: Product[]) => void; 
+  setRecord: (record: Product) => void;
+  setPerPage: (per_page: number) => Promise<void>;
+  setPage: (page: number) => void;
+  setPagination: (page: number) => void;
+  handleEdit: (recordId: string) => void;
+  setSelectedRecord: (record: Product | null) => void;
+  fetchRecordById: (record: Product) => void;
+  setFilter: (filter: Partial<ProductStore['filter']>) => void;
+  clearFilter: () => void;
+    filter: {
+    id: string;
+    product_category_first_id: string;
+    name: string;
+    selling_price: number;
+    availability: string;
+    image_url: string;
+    created_by: string;
+    updated_by: string;
+    is_activated: number;
+    created_at: string;
+    updated_at: string;
+  };
+}
+
+export default const productStore = create<ProductStore>((set) => ({
+  records: [],
+  customer: null,
+  loading: false,
+  error: null,
+  pagination: {
+    current_page: 1,
+    from: 1,
+    last_page: 1,
+    per_page: 10,
+    prev_page_url: null,
+    to: 10,
+    total: 0,
+  },
+  filter: {
+    id: '',
+    product_category_first_id: '',
+    name: '',
+    selling_price: null,
+    availability: '',
+    image_url: '',
+    is_activated: null,
+    created_by: '',
+    updated_by: '',
+    created_at: '',
+    updated_at: '',
+  },
+
+  setRecords: (records: Record[]) => {
+    set({ records }); 
+  },
+
+}));
+
+const useStore = create((set) => ({
+  filters: {
+    search: "",
+    availability: "",
+    selling_price: "",
+    image_url: "",
+    created_by: "",
+    updated_by: "",
+    is_activated: "",
+    created_at: "",
+    updated_at: "",
+  },
+  setFilters: (newFilters) => set({ filters: newFilters }),
+}));
+
+const ProductIndex = () => {
+  const { products:records } = usePage().props;
+  
+  const { filters: filterState, setFilters } = useStore();
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
+
+  const breadcrumbs: BreadcrumbItem[] = [
+    {
+      title: `Product`,
+      href: '/product',
+    },
+  ];
+
+  const toggleSheet = () => setIsSheetOpen((prevState) => !prevState);
+
+  return (
+    <AppLayout breadcrumbs={breadcrumbs}>
+      <Head title="Products" />
+
+      <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4 overflow-x-auto">
+        <Card>
+          <CardHeader>
+            <CardTitle>Product Page</CardTitle>
+          </CardHeader>
+        </Card>
+
+        <div className="mb-4 flex items-center justify-between gap-4">
+          <Button onClick={toggleSheet} className="bg-blue-500 text-white">
+            Advanced Search
+          </Button>
+
+          <div className="w-full md:w-4/6">
+            <Search
+              url={route("products.index")}
+              placeholder={"Cari Nama produk..."}
+              filter={filterState} 
+              setFilters={setFilters} 
+            />
+          </div>
+
+          <Button onClick={() => window.location.href = route('products.create')}>
+            Create Product
+          </Button>
+        </div>
+
+        <Sheet open={isSheetOpen} onOpenChange={toggleSheet}>
+          <SheetContent className="overflow-y-auto max-h-[190vh]">
+            <SheetHeader>
+              <SheetTitle>Advanced Search</SheetTitle>
+              <SheetDescription>
+                Filter products by various criteria.
+              </SheetDescription>
+            </SheetHeader>
+
+            <ProductFilterForm filters={filterState} setFilters={setFilters} />
+          </SheetContent>
+        </Sheet>
+
+        <Card>
+          <CardContent>
+            <ProductTable
+              records={records}
+              handleDelete={() => {}}
+              goToPage={() => {}}
+              formatDateTime={(date) => new Date(date).toLocaleDateString()}
+              getStatusClass={() => {}}
+            />
+          </CardContent>
+        </Card>
+      </div>
+    </AppLayout>
+  );
+};
+
+export default ProductIndex;

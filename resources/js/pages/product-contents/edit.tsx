@@ -42,7 +42,7 @@ import ProductContentFeatureIndex from "@/pages/product-content-features/index";
 
 
 const ProductContentEdit = ({ productContent, productContentDisplays,productContentFeatures }) => {
-  // Form setup
+  
   const { data, setData, put, processing, errors } = useForm({
     product_id: productContent.product_id,
     title: productContent.title,
@@ -270,11 +270,7 @@ const ProductContentEdit = ({ productContent, productContentDisplays,productCont
 
               {/* Feature, Marketplace, and Meta Tabs */}
               <TabsContent value="features">
-                <Card>
-                  <CardContent>
                      <ProductContentFeatureIndex product_content_features={productContentFeatures} filters={{}} />
-                  </CardContent>
-                </Card>
               </TabsContent>
               <TabsContent value="marketplaces">
                 <Card>
